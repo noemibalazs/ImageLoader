@@ -85,7 +85,7 @@ class MainActivity : AppCompatActivity(), ManualClearCacheListener, PeriodicClea
         }
     }
 
-    override fun periodicClear() {
+    override fun periodicCacheClear() {
         scheduleCacheClear()
     }
 
@@ -103,7 +103,7 @@ class MainActivity : AppCompatActivity(), ManualClearCacheListener, PeriodicClea
         Toast.makeText(this, R.string.label_cache_clear, Toast.LENGTH_LONG).show()
     }
 
-    override fun clearCache() {
+    override fun manualCacheClear() {
         cacheClear()
     }
 

@@ -33,12 +33,12 @@ public class TaskExecutor {
 
     public Bitmap loadImage(Boolean isLastIndex) {
         if (memoryCache.getBitmapFromMemoryCache(imageUrl) != null) {
-            System.out.println("Was returned from memory");
+            System.out.println("Bitmap returned from memory");
             return memoryCache.getBitmapFromMemoryCache(imageUrl);
         } else if (diskCache.getBitmapFromDiskCache(imageUrl) != null) {
             Bitmap bitmap = diskCache.getBitmapFromDiskCache(imageUrl);
             memoryCache.addBitmapToMemoryCache(imageUrl, bitmap);
-            System.out.println("Was returned from disk");
+            System.out.println("Bitmap returned from disk");
             return bitmap;
         } else {
             ExecutorService executors = Executors.newSingleThreadExecutor();
@@ -50,9 +50,9 @@ public class TaskExecutor {
 
                 memoryCache.addBitmapToMemoryCache(imageUrl, resized);
                 diskCache.addBitmapToDiskCache(imageUrl, resized);
-                System.out.println("Was returned from endpoint");
+                System.out.println("Bitmap returned from endpoint");
                 if (isLastIndex){
-                    clearInterface.periodicClear();
+                    clearInterface.periodicCacheClear();
                 }
                 return resized;
             } catch (ExecutionException | InterruptedException e) {

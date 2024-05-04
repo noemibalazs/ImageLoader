@@ -72,7 +72,6 @@ public class ImageDiskCache {
                 bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream);
                 editor.commit();
                 stream.close();
-                System.out.println("addBitmapToDiskCache() - bitmap added to disk cache: " + key);
             } else {
                 snapshot.close();
             }
@@ -92,7 +91,6 @@ public class ImageDiskCache {
                 if (stream != null) {
                     bitmap = BitmapFactory.decodeStream(stream);
                     stream.close();
-                    System.out.println("getBitmapFromDiskCache() - bitmap get from disk cache: " + key);
                 }
             }
         } catch (IOException e) {

@@ -34,13 +34,11 @@ public class ImageMemoryCache {
     public void addBitmapToMemoryCache(String key, Bitmap bitmap) {
         if (memoryCache != null && getBitmapFromMemoryCache(key) == null) {
             memoryCache.put(key, bitmap);
-            System.out.println("addBitmapToMemoryCache() - bitmap cached: " + key);
         }
     }
 
     @Nullable
     public Bitmap getBitmapFromMemoryCache(String key) {
-        System.out.println("getBitmapFromMemoryCache() - bitmap was get from memory: " + key);
         return memoryCache.get(key);
     }
 

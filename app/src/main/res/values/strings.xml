@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">ImageLoader</string>
+
+    <string name="label_notification_title">Cache Cleared</string>
+    <string name="label_notification_content">Your cached images were cleared</string>
+
+    <string name="label_cache_clear">Your cache will be cleared in 4h.</string>
+</resources>

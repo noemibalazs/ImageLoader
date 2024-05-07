@@ -1,29 +1,18 @@
 package com.noemi.imageloader.ui
 
-import android.graphics.Bitmap
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import com.noemi.imagecache.PeriodicClearCacheListener
-import com.noemi.imagecache.ImageDiskCache
-import com.noemi.imagecache.ImageMemoryCache
 import com.noemi.imagecache.ImageLoader
 import com.noemi.imageloader.databinding.ItemImageBinding
 import com.noemi.imageloader.model.ZipoImage
 
 class ZipoImageAdapter(
-    private val imageCache: ImageMemoryCache,
-    private val diskCache: ImageDiskCache,
-    private val placeHolder: Bitmap,
     images: List<ZipoImage>,
-    private val listener: PeriodicClearCacheListener
+    private val loader: ImageLoader
 ) : RecyclerView.Adapter<ZipoImageAdapter.ImageViewHolder>() {
 
     private var zipos: List<ZipoImage> = images
-
-    init {
-        imageCache.initializeCache()
-    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ImageViewHolder {
         val binding: ItemImageBinding = ItemImageBinding.inflate(LayoutInflater.from(parent.context), parent, false)
@@ -42,7 +31,7 @@ class ZipoImageAdapter(
 
             with(binding) {
                 imageId.text = data.id.toString()
-                ImageLoader(imageCache, diskCache, imageView, placeHolder, listener).execute(data.imageUrl, lastIndex)
+                loader.execute(data.imageUrl, lastIndex, imageView)
             }
         }
     }

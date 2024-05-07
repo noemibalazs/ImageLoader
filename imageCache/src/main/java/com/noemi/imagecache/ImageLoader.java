@@ -7,23 +7,30 @@ import java.lang.ref.WeakReference;
 
 public class ImageLoader {
 
-    private final ImageMemoryCache memoryCache;
-    private final ImageDiskCache diskCache;
-    private final Bitmap placeHolder;
-    private final WeakReference<ImageView> imageView;
-    private final PeriodicClearCacheListener listener;
+    private static ImageMemoryCache memoryCache;
+    private static ImageDiskCache diskCache;
+    private static Bitmap holder;
+    private static PeriodicClearCacheListener listener;
 
-    public ImageLoader(ImageMemoryCache cache, ImageDiskCache diskCache, ImageView imageView, Bitmap placeHolder, PeriodicClearCacheListener listener) {
-        this.memoryCache = cache;
-        this.diskCache = diskCache;
-        this.imageView = new WeakReference<ImageView>(imageView);
-        this.placeHolder = placeHolder;
-        this.listener = listener;
+    private ImageLoader() {}
+
+    private static ImageLoader instance = null;
+
+    public static ImageLoader getInstance(ImageMemoryCache memory, ImageDiskCache disk, Bitmap placeHolder, PeriodicClearCacheListener clearListener) {
+        if (instance == null) {
+            memoryCache = memory;
+            diskCache = disk;
+            holder = placeHolder;
+            listener = clearListener;
+            instance = new ImageLoader();
+        }
+        return instance;
     }
 
-    public void execute(String url, Boolean lastIndex) {
-        Bitmap bitmap = new TaskExecutor(memoryCache, diskCache, url, placeHolder, listener).loadImage(lastIndex);
-        final ImageView imageView = this.imageView.get();
+    public void execute(String url, Boolean lastIndex, ImageView view) {
+        WeakReference<ImageView> i = new WeakReference<>(view);
+        Bitmap bitmap = new TaskExecutor(memoryCache, diskCache, url, holder, listener).loadImage(lastIndex);
+        final ImageView imageView = i.get();
         if (imageView != null) {
             imageView.setImageBitmap(bitmap);
         }

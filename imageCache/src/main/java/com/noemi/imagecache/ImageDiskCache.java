@@ -100,12 +100,17 @@ public class ImageDiskCache {
     }
 
     public void clearCache() {
-        if (diskLruCache != null) {
+        if (!isClosed() && diskLruCache != null) {
             try {
+                diskLruCache.close();
                 diskLruCache.delete();
             } catch (IOException e) {
                 System.out.println("clearCache() exception: " + e.getLocalizedMessage());
             }
         }
+    }
+
+    public Boolean isClosed(){
+        return diskLruCache.isClosed();
     }
 }

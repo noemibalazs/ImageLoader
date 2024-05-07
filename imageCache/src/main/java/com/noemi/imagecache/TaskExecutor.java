@@ -35,7 +35,7 @@ public class TaskExecutor {
         if (memoryCache.getBitmapFromMemoryCache(imageUrl) != null) {
             System.out.println("Bitmap returned from memory");
             return memoryCache.getBitmapFromMemoryCache(imageUrl);
-        } else if (diskCache.getBitmapFromDiskCache(imageUrl) != null) {
+        } else if (!diskCache.isClosed() && diskCache.getBitmapFromDiskCache(imageUrl) != null) {
             Bitmap bitmap = diskCache.getBitmapFromDiskCache(imageUrl);
             memoryCache.addBitmapToMemoryCache(imageUrl, bitmap);
             System.out.println("Bitmap returned from disk");
@@ -49,9 +49,11 @@ public class TaskExecutor {
                 Bitmap resized = Bitmap.createScaledBitmap(bitmap, 600, 600, false);
 
                 memoryCache.addBitmapToMemoryCache(imageUrl, resized);
-                diskCache.addBitmapToDiskCache(imageUrl, resized);
+                if (!diskCache.isClosed()){
+                    diskCache.addBitmapToDiskCache(imageUrl, resized);
+                }
                 System.out.println("Bitmap returned from endpoint");
-                if (isLastIndex){
+                if (isLastIndex) {
                     clearInterface.periodicCacheClear();
                 }
                 return resized;

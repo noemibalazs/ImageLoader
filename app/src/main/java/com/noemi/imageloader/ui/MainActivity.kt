@@ -15,6 +15,7 @@ import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import com.noemi.imagecache.ImageDiskCache
+import com.noemi.imagecache.ImageLoader
 import com.noemi.imagecache.ImageMemoryCache
 import com.noemi.imagecache.PeriodicClearCacheListener
 import com.noemi.imageloader.R
@@ -33,13 +34,13 @@ class MainActivity : AppCompatActivity(), ManualClearCacheListener, PeriodicClea
     private val notificationPermission = listOf(Manifest.permission.POST_NOTIFICATIONS)
 
     @Inject
-    lateinit var imageCache: ImageMemoryCache
+    lateinit var memoryCache: ImageMemoryCache
 
     @Inject
     lateinit var diskCache: ImageDiskCache
 
     private val placeHolder by lazy { BitmapFactory.decodeResource(resources, R.drawable.a3) }
-    private val adapter by lazy { ZipoImageAdapter(imageCache, diskCache, placeHolder, emptyList(), this) }
+    private lateinit var adapter: ZipoImageAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -50,14 +51,18 @@ class MainActivity : AppCompatActivity(), ManualClearCacheListener, PeriodicClea
             cacheClear()
         }
 
+        memoryCache.initializeCache()
+        diskCache.initialize(this)
+
+        val loader = ImageLoader.getInstance(memoryCache, diskCache, placeHolder, this)
+        adapter = ZipoImageAdapter(emptyList(), loader)
+
         with(viewBinding) {
             listener = this@MainActivity
             model = viewModel
             lifecycleOwner = this@MainActivity
             imageRecycleView.adapter = adapter
         }
-
-        diskCache.initialize(this)
 
         with(viewModel) {
             loadImages()
@@ -108,7 +113,7 @@ class MainActivity : AppCompatActivity(), ManualClearCacheListener, PeriodicClea
     }
 
     private fun cacheClear() {
-        imageCache.clearCache()
+        memoryCache.clearCache()
         diskCache.clearCache()
         Toast.makeText(this, getString(R.string.label_notification_content), Toast.LENGTH_LONG).show()
     }

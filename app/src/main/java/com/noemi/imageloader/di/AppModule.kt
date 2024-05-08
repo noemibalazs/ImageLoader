@@ -10,6 +10,8 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
@@ -42,10 +44,13 @@ class AppModule {
             .build()
             .create(ZipoAPI::class.java)
 
+    @Singleton
+    @Provides
+    fun providesDispatcher(): CoroutineDispatcher = Dispatchers.IO
 
     @Provides
     @Singleton
-    fun providesImageDataSource(zipoAPI: ZipoAPI): ZipoImageDataSource = ZipoImageDataSourceImpl(zipoAPI)
+    fun providesImageDataSource(zipoAPI: ZipoAPI, dispatcher: CoroutineDispatcher): ZipoImageDataSource = ZipoImageDataSourceImpl(zipoAPI, dispatcher)
 
 
     @Provides

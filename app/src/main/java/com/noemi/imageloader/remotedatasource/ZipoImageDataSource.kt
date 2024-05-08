@@ -1,9 +1,9 @@
 package com.noemi.imageloader.remotedatasource
 
 import com.noemi.imageloader.model.ZipoImage
-import io.reactivex.rxjava3.core.Single
+import kotlinx.coroutines.flow.Flow
 
 interface ZipoImageDataSource {
 
-    fun loadImages(): Single<List<ZipoImage>>
+    fun loadImages(): Flow<List<ZipoImage>>
 }

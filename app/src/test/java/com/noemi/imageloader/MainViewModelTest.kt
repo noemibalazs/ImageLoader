@@ -1,86 +1,88 @@
 package com.noemi.imageloader
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import androidx.lifecycle.Observer
+import app.cash.turbine.test
+import com.google.common.truth.Truth.assertThat
 import com.noemi.imageloader.model.ZipoImage
 import com.noemi.imageloader.remotedatasource.ZipoImageDataSource
 import com.noemi.imageloader.ui.MainViewModel
-import io.mockk.*
-import io.mockk.impl.annotations.MockK
-import io.mockk.junit4.MockKRule
-import io.reactivex.rxjava3.core.Single
-import io.reactivex.rxjava3.plugins.RxJavaPlugins
-import io.reactivex.rxjava3.schedulers.TestScheduler
+import kotlinx.coroutines.*
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.setMain
+import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.mockito.Mock
+import org.mockito.Mockito.mock
+import org.mockito.MockitoAnnotations
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class MainViewModelTest {
 
     @get:Rule
-    val mockKRule = MockKRule(this)
+    var rule = InstantTaskExecutorRule()
 
-    @get:Rule
-    val testRule = InstantTaskExecutorRule()
+    private val dispatcher = UnconfinedTestDispatcher()
 
-    @get:Rule
-    val rule = RxJavaSchedulerTrampolineRule()
-
-    @MockK
+    @Mock
     private lateinit var zipoDataSource: ZipoImageDataSource
 
-    @MockK
-    private lateinit var viewStateObserver: Observer<MainViewModel.ViewState>
-
-    @MockK
-    private lateinit var imagesObserver: Observer<List<ZipoImage>>
-
-    private val imagesCaptor = mutableListOf<List<ZipoImage>>()
-    private val stateCaptor = mutableListOf<MainViewModel.ViewState>()
-
-    private val testScheduler = TestScheduler()
     private lateinit var viewModel: MainViewModel
 
-    private val image: ZipoImage = mockk()
-    private val error: Exception = mockk()
+    private val image: ZipoImage = mock()
+    private val error: Exception = mock()
 
     @Before
     fun setUp() {
+        MockitoAnnotations.openMocks(this)
+        Dispatchers.setMain(dispatcher)
         viewModel = MainViewModel(zipoDataSource)
-
-        RxJavaPlugins.setComputationSchedulerHandler { testScheduler }
-
-        imagesCaptor.clear()
-        stateCaptor.clear()
-
-        every { imagesObserver.onChanged(capture(imagesCaptor)) } just runs
-        every { viewStateObserver.onChanged(capture(stateCaptor)) } just runs
-
-        viewModel.viewState.observeForever(viewStateObserver)
-        viewModel.zipoImages.observeForever(imagesObserver)
     }
 
+
+    @After
+    fun tearDown() {
+        Dispatchers.resetMain()
+    }
+
+
     @Test
-    fun `test load images and should be successful`() {
-        every { zipoDataSource.loadImages() } returns Single.just(listOf(image))
+    fun `test load images and should be successful`() = runBlocking {
+        val job = launch {
+            assertThat(viewModel.viewState.value).isEqualTo(MainViewModel.ViewState.Loading)
+
+            zipoDataSource.loadImages().test {
+                val result = awaitItem()
+                assertThat(viewModel.viewState.value).isEqualTo(MainViewModel.ViewState.Loaded)
+                assertThat(result).isEqualTo(listOf(image))
+
+                cancelAndConsumeRemainingEvents()
+            }
+        }
 
         viewModel.loadImages()
 
-        verify(exactly = 1) { zipoDataSource.loadImages() }
-        verify(exactly = 1) { viewStateObserver.onChanged(MainViewModel.ViewState.Loading) }
-        verify(exactly = 1) { imagesObserver.onChanged(listOf(image)) }
-        verify(exactly = 1) { viewStateObserver.onChanged(MainViewModel.ViewState.Loaded) }
+        job.cancelAndJoin()
     }
 
     @Test
-    fun `test load images and should throws exception`() {
-        every { zipoDataSource.loadImages() } returns Single.error(error)
+    fun `test load images and should throws exception`() = runBlocking {
+        val job = launch {
+            assertThat(viewModel.viewState.value).isEqualTo(MainViewModel.ViewState.Loading)
+
+            zipoDataSource.loadImages().test {
+                val result = awaitError()
+                assertThat(viewModel.viewState.value).isEqualTo(MainViewModel.ViewState.Failed)
+                assertThat(result).isEqualTo(error)
+
+                cancelAndIgnoreRemainingEvents()
+            }
+        }
 
         viewModel.loadImages()
 
-        verify(exactly = 1) { zipoDataSource.loadImages() }
-        verify(exactly = 1) { viewStateObserver.onChanged(MainViewModel.ViewState.Loading) }
-        verify(exactly = 0) { imagesObserver.onChanged(listOf(image)) }
-        verify(exactly = 1) { viewStateObserver.onChanged(MainViewModel.ViewState.Failed) }
+        job.cancelAndJoin()
     }
 }

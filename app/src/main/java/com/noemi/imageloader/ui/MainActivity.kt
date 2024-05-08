@@ -66,7 +66,7 @@ class MainActivity : AppCompatActivity(), ManualClearCacheListener, PeriodicClea
 
         with(viewModel) {
             loadImages()
-            zipoImages.observe(this@MainActivity) { images ->
+            images.observe(this@MainActivity) { images ->
                 adapter.updateImages(images)
             }
         }

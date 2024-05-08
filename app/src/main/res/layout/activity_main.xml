@@ -34,14 +34,12 @@
             android:layout_width="@dimen/icon_size"
             android:layout_height="@dimen/icon_size"
             android:indeterminate="true"
-            android:visibility="gone"
             app:indicatorColor="@color/black"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:viewState="@{model.viewState}"
-            tools:visibility="visible" />
+            app:viewState="@{model.viewState}" />
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/clearButton"

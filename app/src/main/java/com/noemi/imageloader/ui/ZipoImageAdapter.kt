@@ -31,7 +31,7 @@ class ZipoImageAdapter(
 
             with(binding) {
                 imageId.text = data.id.toString()
-                loader.execute(data.imageUrl, lastIndex, imageView)
+                loader.execute(data.imageUrl, imageView, lastIndex)
             }
         }
     }
